@@ -24,7 +24,7 @@ std::vector<int> MPI_take_where(const std::vector<int>& data, Pred pred, MPI_Dat
 
     MPI_Scatterv(data.data(), send_counts.data(), displs.data(), mpi_datatype,
         local_data.data(), send_counts[rank], mpi_datatype,
-        0, comm);
+        root, comm);
 
     std::vector<int> local_filtered_data = ParallelProgShared::take_where(local_data, pred);
     const int local_count = local_filtered_data.size();
@@ -32,7 +32,7 @@ std::vector<int> MPI_take_where(const std::vector<int>& data, Pred pred, MPI_Dat
 
     MPI_Gather(&local_count, 1, MPI_INT,
         recv_counts.data(), 1, MPI_INT,
-        0, comm);
+        root, comm);
 
     std::vector<int> global_filtered;
     std::vector<int> displs2(size, 0);
@@ -48,7 +48,7 @@ std::vector<int> MPI_take_where(const std::vector<int>& data, Pred pred, MPI_Dat
 
     MPI_Gatherv(local_filtered_data.data(), local_count, mpi_datatype,
         global_filtered.data(), recv_counts.data(), displs2.data(), mpi_datatype,
-        0, comm);
+        root, comm);
 
     return global_filtered;
 }
