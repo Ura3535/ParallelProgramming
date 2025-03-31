@@ -12,14 +12,11 @@ std::vector<int> MPI_take_where(const std::vector<int>& data, Pred pred, MPI_Dat
     MPI_Comm_rank(comm, &rank);
     MPI_Comm_size(comm, &size);
 
-    int n;
-    MPI_Scatter(&data_size, 1, MPI_INT,
-        &n, 1, MPI_INT,
-        0, comm)
+	MPI_Bcast(&data_size, 1, MPI_INT, root, comm);
 
-    std::vector<int> send_counts(size, n / size);
+    std::vector<int> send_counts(size, data_size / size);
     std::vector<int> displs(size, 0);
-    for (int i = 0; i < n % size; ++i)
+    for (int i = 0; i < data_size % size; ++i)
         ++send_counts[i];
     for (int i = 1; i < size; ++i)
         displs[i] = displs[i - 1] + send_counts[i - 1];
@@ -67,7 +64,7 @@ int main(int argc, char** argv) {
     std::vector<int> data;
 
     if (rank == 0) {
-        data.resize(n);
+		data.resize(n);
         for (int i = 0; i < n; i++) {
             data[i] = i;
         }
